@@ -1,0 +1,17 @@
+/**
+ * Public Firebase web configuration, sourced from NEXT_PUBLIC_* env vars.
+ * These values are not secret — Firebase security is enforced by Auth +
+ * Firestore Security Rules, not by hiding the config.
+ */
+export const firebaseConfig = {
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
+} as const;
+
+/** Domain used to derive a Firebase Auth email from an admission number. */
+export const STUDENT_EMAIL_DOMAIN =
+  process.env.NEXT_PUBLIC_STUDENT_EMAIL_DOMAIN ?? "students.hunuwala.lk";
