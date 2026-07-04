@@ -13,6 +13,7 @@ export const en = {
   "nav.home": "Home",
   "nav.dashboard": "Dashboard",
   "nav.students": "Students",
+  "nav.forms": "Forms",
   "nav.teachers": "Teachers",
   "nav.logout": "Log out",
 
@@ -22,6 +23,8 @@ export const en = {
   "btn.save": "Save",
   "btn.cancel": "Cancel",
   "btn.login": "Log in",
+  "btn.submit": "Submit",
+  "btn.reject": "Reject",
   "btn.edit": "Edit",
   "btn.delete": "Delete",
   "btn.addStudent": "Add Student",

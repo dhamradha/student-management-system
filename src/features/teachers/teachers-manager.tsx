@@ -1,11 +1,12 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import { Trash2, UserPlus } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
+import { PaginationControls } from "@/components/pagination-controls";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -32,10 +33,12 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { usePaged } from "@/hooks/use-paged";
+import { PAGE_SIZE, type Cursor } from "@/lib/pagination";
 import {
   createTeacher,
   deleteTeacher,
-  listTeachers,
+  pageTeachers,
 } from "@/lib/services/staff";
 import { useTranslation } from "@/lib/i18n/provider";
 import { newTeacherSchema, type NewTeacherInput } from "@/lib/validations/student";
@@ -43,8 +46,6 @@ import type { UserDoc } from "@/types";
 
 export function TeachersManager() {
   const { t } = useTranslation();
-  const [teachers, setTeachers] = useState<UserDoc[]>([]);
-  const [loading, setLoading] = useState(true);
   const [busyUid, setBusyUid] = useState<string | null>(null);
 
   const form = useForm<NewTeacherInput>({
@@ -52,27 +53,26 @@ export function TeachersManager() {
     defaultValues: { displayName: "", email: "", password: "" },
   });
 
-  const load = useCallback(async () => {
-    setLoading(true);
-    try {
-      setTeachers(await listTeachers());
-    } catch {
-      toast.error("Could not load teachers.");
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    void load();
-  }, [load]);
+  const fetchPage = useCallback(
+    (after: Cursor) => pageTeachers(PAGE_SIZE, after),
+    [],
+  );
+  const {
+    records: teachers,
+    loading,
+    page,
+    hasMore,
+    next,
+    prev,
+    reload,
+  } = usePaged<UserDoc>(fetchPage, "teachers");
 
   async function onAdd(values: NewTeacherInput) {
     try {
       await createTeacher(values);
       toast.success(`${values.displayName} can now sign in.`);
       form.reset();
-      await load();
+      reload();
     } catch (err) {
       toast.error(
         err instanceof Error ? err.message : "Could not add teacher.",
@@ -85,8 +85,8 @@ export function TeachersManager() {
     setBusyUid(teacher.uid);
     try {
       await deleteTeacher(teacher.uid);
-      setTeachers((prev) => prev.filter((x) => x.uid !== teacher.uid));
       toast.success("Access revoked.");
+      reload();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Could not remove.");
     } finally {
@@ -157,6 +157,7 @@ export function TeachersManager() {
         </CardContent>
       </Card>
 
+      <div className="space-y-4">
       <div className="rounded-lg border">
         <Table>
           <TableHeader>
@@ -208,6 +209,14 @@ export function TeachersManager() {
             )}
           </TableBody>
         </Table>
+      </div>
+        <PaginationControls
+          page={page}
+          hasMore={hasMore}
+          loading={loading}
+          onPrev={prev}
+          onNext={next}
+        />
       </div>
     </div>
   );

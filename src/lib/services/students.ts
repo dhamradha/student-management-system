@@ -4,14 +4,18 @@ import {
   doc,
   getDoc,
   getDocs,
+  limit,
+  orderBy,
   query,
   setDoc,
+  startAfter,
   updateDoc,
   where,
   type QueryConstraint,
 } from "firebase/firestore";
 
 import { db } from "@/lib/firebase/client";
+import type { Cursor, Page } from "@/lib/pagination";
 import type { AcademicData, GuardianData, StudentRecord } from "@/types";
 import type { StudentInput } from "@/lib/validations/student";
 
@@ -101,9 +105,15 @@ interface StudentFilters {
   classStream?: string;
 }
 
-export async function listStudents(
-  filters: StudentFilters = {},
-): Promise<StudentRecord[]> {
+/**
+ * One page of students, ordered by admission number, filtered by grade/class.
+ * Fetches PAGE_SIZE+1 rows to detect whether another page exists.
+ */
+export async function pageStudents(
+  filters: StudentFilters,
+  pageSize: number,
+  after: Cursor,
+): Promise<Page<StudentRecord>> {
   const constraints: QueryConstraint[] = [];
   if (filters.grade) {
     constraints.push(where("academicData.grade", "==", filters.grade));
@@ -113,6 +123,17 @@ export async function listStudents(
       where("academicData.classStream", "==", filters.classStream),
     );
   }
+  constraints.push(orderBy("academicData.admissionNo"));
+  if (after) constraints.push(startAfter(after));
+  constraints.push(limit(pageSize + 1));
+
   const snap = await getDocs(query(studentsCol, ...constraints));
-  return snap.docs.map((d) => d.data() as StudentRecord);
+  const docs = snap.docs;
+  const hasMore = docs.length > pageSize;
+  const pageDocs = hasMore ? docs.slice(0, pageSize) : docs;
+  return {
+    records: pageDocs.map((d) => d.data() as StudentRecord),
+    cursor: pageDocs[pageDocs.length - 1] ?? null,
+    hasMore,
+  };
 }

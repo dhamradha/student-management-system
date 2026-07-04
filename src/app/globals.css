@@ -141,4 +141,19 @@
   html[lang="si"] body {
     font-family: var(--font-sinhala), var(--font-sans), ui-sans-serif, sans-serif;
   }
+  /* Tailwind v4 defaults interactive elements to the arrow cursor — restore a
+     pointer cursor on everything clickable. */
+  button:not(:disabled),
+  [role="button"]:not(:disabled),
+  [role="tab"]:not([aria-disabled="true"]),
+  [role="option"],
+  [role="menuitem"],
+  summary,
+  label:has(> input[type="checkbox"]:not(:disabled)),
+  label:has(> input[type="radio"]:not(:disabled)),
+  input[type="checkbox"]:not(:disabled),
+  input[type="radio"]:not(:disabled),
+  select:not(:disabled) {
+    cursor: pointer;
+  }
 }

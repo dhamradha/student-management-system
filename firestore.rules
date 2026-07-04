@@ -3,7 +3,8 @@ rules_version = '2';
 // RBAC for the Student Data Management System.
 // Students are records, not users. Only staff authenticate:
 //   - SUPER_ADMIN: full control; provisions/manages teacher accounts.
-//   - TEACHER:     full CRUD on student records.
+//   - TEACHER:     full CRUD on student records and forms.
+// Students (the public) can read published forms and submit responses.
 service cloud.firestore {
   match /databases/{database}/documents {
 
@@ -11,8 +12,6 @@ service cloud.firestore {
       return request.auth != null;
     }
 
-    // Role of the CURRENT user, or null if they have no staff document.
-    // Guarded with exists() so it never errors on a missing doc.
     function currentRole() {
       return exists(/databases/$(database)/documents/users/$(request.auth.uid))
         ? get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role
@@ -27,16 +26,31 @@ service cloud.firestore {
       return isSignedIn() && currentRole() in ['TEACHER', 'SUPER_ADMIN'];
     }
 
-    // Staff accounts. Provisioning happens server-side via the Admin SDK, so
-    // creation/updates from clients are restricted to the SUPER_ADMIN.
+    // Staff accounts — provisioned server-side via the Admin SDK.
     match /users/{uid} {
       allow read: if (isSignedIn() && request.auth.uid == uid) || isSuperAdmin();
       allow create, update, delete: if isSuperAdmin();
     }
 
-    // Student records — any authenticated staff member has full CRUD.
+    // Student records — full CRUD for any authenticated staff member.
     match /students/{studentId} {
       allow read, create, update, delete: if isStaff();
+    }
+
+    // Forms — staff manage; the public may READ only PUBLISHED forms
+    // (so a shared link renders without a login).
+    match /forms/{formId} {
+      allow read: if isStaff() || resource.data.status == 'published';
+      allow create, update, delete: if isStaff();
+    }
+
+    // Submissions — the public may CREATE a pending response to a published
+    // form; only staff can read or act on them.
+    match /submissions/{submissionId} {
+      allow read, update, delete: if isStaff();
+      allow create: if request.resource.data.status == 'pending'
+        && exists(/databases/$(database)/documents/forms/$(request.resource.data.formId))
+        && get(/databases/$(database)/documents/forms/$(request.resource.data.formId)).data.status == 'published';
     }
   }
 }

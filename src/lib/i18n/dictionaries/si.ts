@@ -14,6 +14,7 @@ export const si: Record<TranslationKey, string> = {
   "nav.home": "මුල් පිටුව",
   "nav.dashboard": "පාලක පුවරුව",
   "nav.students": "ශිෂ්‍යයෝ",
+  "nav.forms": "පෝරම",
   "nav.teachers": "ගුරුවරු",
   "nav.logout": "පිටවීම",
 
@@ -23,6 +24,8 @@ export const si: Record<TranslationKey, string> = {
   "btn.save": "සුරකින්න",
   "btn.cancel": "අවලංගු කරන්න",
   "btn.login": "පිවිසෙන්න",
+  "btn.submit": "යොමු කරන්න",
+  "btn.reject": "ප්‍රතික්ෂේප කරන්න",
   "btn.edit": "සංස්කරණය",
   "btn.delete": "මකන්න",
   "btn.addStudent": "ශිෂ්‍යයෙකු එක් කරන්න",

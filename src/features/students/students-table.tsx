@@ -1,10 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import { Pencil, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
+import { PaginationControls } from "@/components/pagination-controls";
 import { Button, buttonVariants } from "@/components/ui/button";
 import {
   Select,
@@ -22,8 +23,10 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { usePaged } from "@/hooks/use-paged";
 import { AL_STREAMS, GRADES, OL_CLASSES } from "@/lib/constants/academic";
-import { deleteStudent, listStudents } from "@/lib/services/students";
+import { PAGE_SIZE, type Cursor } from "@/lib/pagination";
+import { deleteStudent, pageStudents } from "@/lib/services/students";
 import { useTranslation } from "@/lib/i18n/provider";
 import { cn } from "@/lib/utils";
 import type { StudentRecord } from "@/types";
@@ -33,39 +36,33 @@ const SUB_DIVISIONS = [...OL_CLASSES, ...AL_STREAMS];
 
 export function StudentsTable() {
   const { t } = useTranslation();
-  const [students, setStudents] = useState<StudentRecord[]>([]);
-  const [loading, setLoading] = useState(true);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [grade, setGrade] = useState(ALL);
   const [classStream, setClassStream] = useState(ALL);
 
-  const load = useCallback(async () => {
-    setLoading(true);
-    try {
-      setStudents(
-        await listStudents({
+  const fetchPage = useCallback(
+    (after: Cursor) =>
+      pageStudents(
+        {
           grade: grade === ALL ? undefined : grade,
           classStream: classStream === ALL ? undefined : classStream,
-        }),
-      );
-    } catch {
-      toast.error("Could not load students.");
-    } finally {
-      setLoading(false);
-    }
-  }, [grade, classStream]);
+        },
+        PAGE_SIZE,
+        after,
+      ),
+    [grade, classStream],
+  );
 
-  useEffect(() => {
-    void load();
-  }, [load]);
+  const { records, loading, page, hasMore, next, prev, reload } =
+    usePaged<StudentRecord>(fetchPage, `${grade}|${classStream}`);
 
   async function handleDelete(record: StudentRecord) {
     if (!window.confirm(t("common.confirmDelete"))) return;
     setBusyId(record.id);
     try {
       await deleteStudent(record.id);
-      setStudents((prev) => prev.filter((s) => s.id !== record.id));
       toast.success("Student removed.");
+      reload();
     } catch {
       toast.error("Could not delete this student.");
     } finally {
@@ -90,10 +87,7 @@ export function StudentsTable() {
             options={SUB_DIVISIONS}
           />
         </div>
-        <Link
-          href="/students/new"
-          className={cn(buttonVariants(), "gap-2")}
-        >
+        <Link href="/students/new" className={cn(buttonVariants(), "gap-2")}>
           <Plus className="size-4" />
           {t("btn.addStudent")}
         </Link>
@@ -112,14 +106,14 @@ export function StudentsTable() {
           </TableHeader>
           <TableBody>
             {loading ? (
-              Array.from({ length: 4 }).map((_, i) => (
+              Array.from({ length: 5 }).map((_, i) => (
                 <TableRow key={i}>
                   <TableCell colSpan={5}>
                     <Skeleton className="h-6 w-full" />
                   </TableCell>
                 </TableRow>
               ))
-            ) : students.length === 0 ? (
+            ) : records.length === 0 ? (
               <TableRow>
                 <TableCell
                   colSpan={5}
@@ -129,7 +123,7 @@ export function StudentsTable() {
                 </TableCell>
               </TableRow>
             ) : (
-              students.map((s) => (
+              records.map((s) => (
                 <TableRow key={s.id}>
                   <TableCell className="font-medium">
                     {s.academicData.fullName}
@@ -167,6 +161,14 @@ export function StudentsTable() {
           </TableBody>
         </Table>
       </div>
+
+      <PaginationControls
+        page={page}
+        hasMore={hasMore}
+        loading={loading}
+        onPrev={prev}
+        onNext={next}
+      />
     </div>
   );
 }

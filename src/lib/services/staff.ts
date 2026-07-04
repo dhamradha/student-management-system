@@ -1,15 +1,42 @@
-import { collection, getDocs, query, where } from "firebase/firestore";
+import {
+  collection,
+  getDocs,
+  limit,
+  orderBy,
+  query,
+  startAfter,
+  where,
+  type QueryConstraint,
+} from "firebase/firestore";
 
 import { auth, db } from "@/lib/firebase/client";
+import type { Cursor, Page } from "@/lib/pagination";
 import type { UserDoc } from "@/types";
 import type { NewTeacherInput } from "@/lib/validations/student";
 
 const usersCol = collection(db, "users");
 
-/** List all TEACHER accounts (SUPER_ADMIN only, enforced by rules). */
-export async function listTeachers(): Promise<UserDoc[]> {
-  const snap = await getDocs(query(usersCol, where("role", "==", "TEACHER")));
-  return snap.docs.map((d) => d.data() as UserDoc);
+/** One page of TEACHER accounts (SUPER_ADMIN only), ordered by name. */
+export async function pageTeachers(
+  pageSize: number,
+  after: Cursor,
+): Promise<Page<UserDoc>> {
+  const constraints: QueryConstraint[] = [
+    where("role", "==", "TEACHER"),
+    orderBy("displayName"),
+  ];
+  if (after) constraints.push(startAfter(after));
+  constraints.push(limit(pageSize + 1));
+
+  const snap = await getDocs(query(usersCol, ...constraints));
+  const docs = snap.docs;
+  const hasMore = docs.length > pageSize;
+  const pageDocs = hasMore ? docs.slice(0, pageSize) : docs;
+  return {
+    records: pageDocs.map((d) => d.data() as UserDoc),
+    cursor: pageDocs[pageDocs.length - 1] ?? null,
+    hasMore,
+  };
 }
 
 async function authorizedFetch(input: RequestInfo, init: RequestInit = {}) {
