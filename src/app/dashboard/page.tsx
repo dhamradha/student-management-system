@@ -17,6 +17,7 @@ export default function DashboardRedirect() {
   useEffect(() => {
     if (loading) return;
     if (!user) router.replace("/login");
+    else if (profile?.mustChangePassword) router.replace("/change-password");
     else if (profile) router.replace(ROLE_HOME[profile.role]);
   }, [loading, user, profile, router]);
 

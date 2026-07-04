@@ -16,6 +16,7 @@ export const en = {
   "nav.teacherRecords": "Teacher Records",
   "nav.forms": "Forms",
   "nav.teachers": "Teachers",
+  "nav.profile": "Profile",
   "nav.logout": "Log out",
 
   // Buttons

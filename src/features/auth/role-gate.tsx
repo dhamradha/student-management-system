@@ -26,12 +26,20 @@ export function RoleGate({
     if (loading) return;
     if (!user) {
       router.replace("/login");
+    } else if (profile?.mustChangePassword) {
+      router.replace("/change-password");
     } else if (profile && !allow.includes(profile.role)) {
       router.replace("/");
     }
   }, [loading, user, profile, allow, router]);
 
-  if (loading || !user || !profile || !allow.includes(profile.role)) {
+  if (
+    loading ||
+    !user ||
+    !profile ||
+    profile.mustChangePassword ||
+    !allow.includes(profile.role)
+  ) {
     return (
       <div className="text-muted-foreground flex min-h-svh items-center justify-center">
         {t("common.loading")}

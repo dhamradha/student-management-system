@@ -33,6 +33,7 @@ export async function POST(req: Request) {
       email,
       displayName,
       institution: INSTITUTION_NAME,
+      mustChangePassword: true,
       createdAt: now,
       updatedAt: now,
     });

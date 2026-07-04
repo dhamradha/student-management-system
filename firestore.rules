@@ -29,7 +29,14 @@ service cloud.firestore {
     // Staff accounts — provisioned server-side via the Admin SDK.
     match /users/{uid} {
       allow read: if (isSignedIn() && request.auth.uid == uid) || isSuperAdmin();
-      allow create, update, delete: if isSuperAdmin();
+      allow create, delete: if isSuperAdmin();
+      // Super admin can update anything; a user may only clear their own
+      // "must change password" flag (after completing the change).
+      allow update: if isSuperAdmin()
+        || (isSignedIn() && request.auth.uid == uid
+            && request.resource.data.diff(resource.data)
+                 .affectedKeys().hasOnly(['mustChangePassword', 'updatedAt'])
+            && request.resource.data.mustChangePassword == false);
     }
 
     // Student records — full CRUD for any authenticated staff member.

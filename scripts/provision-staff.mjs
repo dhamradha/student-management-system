@@ -61,6 +61,7 @@ await db
       email,
       displayName,
       institution: "Hunuwala Dharmaraja Vidyalaya",
+      mustChangePassword: false,
       createdAt: now,
       updatedAt: now,
     },

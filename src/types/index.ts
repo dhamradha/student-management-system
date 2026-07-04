@@ -36,6 +36,8 @@ export interface UserDoc {
   email: string;
   displayName: string;
   institution: string;
+  /** Set when an admin provisions the account; forces a change on first login. */
+  mustChangePassword?: boolean;
   createdAt: string;
   updatedAt: string;
 }

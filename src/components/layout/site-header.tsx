@@ -7,10 +7,23 @@ import { LogOut } from "lucide-react";
 import { Logo } from "@/components/brand/logo";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { Button, buttonVariants } from "@/components/ui/button";
+import { Tooltip } from "@/components/ui/tooltip";
 import { useAuth } from "@/features/auth/auth-provider";
 import { isSuperAdmin } from "@/lib/constants/roles";
 import { useTranslation } from "@/lib/i18n/provider";
 import { cn } from "@/lib/utils";
+
+function initials(name: string): string {
+  return (
+    name
+      .split(" ")
+      .map((w) => w[0])
+      .filter(Boolean)
+      .slice(0, 2)
+      .join("")
+      .toUpperCase() || "?"
+  );
+}
 
 export function SiteHeader() {
   const { t } = useTranslation();
@@ -61,15 +74,29 @@ export function SiteHeader() {
         <div className="flex items-center gap-2">
           <LanguageSwitcher />
           {user && profile ? (
-            <Button
-              variant="outline"
-              size="sm"
-              className="gap-2"
-              onClick={handleLogout}
-            >
-              <LogOut className="size-4" />
-              {t("nav.logout")}
-            </Button>
+            <>
+              <Tooltip
+                label={`${profile.displayName} · ${t("nav.profile")}`}
+                side="bottom"
+              >
+                <Link
+                  href="/profile"
+                  aria-label={t("nav.profile")}
+                  className="bg-primary text-primary-foreground flex size-8 items-center justify-center rounded-full text-xs font-semibold hover:opacity-90"
+                >
+                  {initials(profile.displayName)}
+                </Link>
+              </Tooltip>
+              <Button
+                variant="outline"
+                size="sm"
+                className="gap-2"
+                onClick={handleLogout}
+              >
+                <LogOut className="size-4" />
+                {t("nav.logout")}
+              </Button>
+            </>
           ) : (
             <Link href="/login" className={buttonVariants({ size: "sm" })}>
               {t("btn.login")}
