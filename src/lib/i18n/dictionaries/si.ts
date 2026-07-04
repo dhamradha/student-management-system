@@ -2,8 +2,7 @@ import type { TranslationKey } from "./en";
 
 /**
  * Sinhala (si) string table. Must provide every key in `TranslationKey`;
- * TypeScript enforces completeness via the Record type below.
- * SRS-sourced strings taken verbatim from §2.
+ * the Record type enforces completeness. SRS-sourced strings per §2.
  */
 export const si: Record<TranslationKey, string> = {
   // App shell / branding
@@ -15,33 +14,24 @@ export const si: Record<TranslationKey, string> = {
   "nav.home": "මුල් පිටුව",
   "nav.dashboard": "පාලක පුවරුව",
   "nav.students": "ශිෂ්‍යයෝ",
+  "nav.teachers": "ගුරුවරු",
   "nav.logout": "පිටවීම",
-  "nav.language": "භාෂාව",
 
-  // Buttons (SRS §2.1)
-  "btn.next": "මීළඟ පිටුව",
+  // Buttons
+  "btn.next": "ඊළඟ",
   "btn.back": "ආපසු",
-  "btn.submit": "දත්ත ඇතුළත් කරන්න",
-  "btn.login": "පිවිසෙන්න",
-  "btn.register": "ලියාපදිංචි වන්න",
-  "btn.approve": "අනුමත කරන්න",
-  "btn.reject": "ප්‍රතික්ෂේප කරන්න",
   "btn.save": "සුරකින්න",
-
-  // Status (SRS §2.1)
-  "status.incomplete": "අසම්පූර්ණයි",
-  "status.pending": "අනුමැතිය අපේක්ෂාවෙන්",
-  "status.approved": "අනුමතයි",
-  "status.rejected": "ප්‍රතික්ෂේපිතයි",
+  "btn.cancel": "අවලංගු කරන්න",
+  "btn.login": "පිවිසෙන්න",
+  "btn.edit": "සංස්කරණය",
+  "btn.delete": "මකන්න",
+  "btn.addStudent": "ශිෂ්‍යයෙකු එක් කරන්න",
+  "btn.addTeacher": "ගුරුවරයෙකු එක් කරන්න",
 
   // Auth
-  "auth.admissionNo": "ඇතුළත් වීමේ අංකය",
+  "auth.email": "විද්‍යුත් තැපෑල",
   "auth.password": "මුරපදය",
-  "auth.confirmPassword": "මුරපදය තහවුරු කරන්න",
-  "auth.loginTitle": "ශිෂ්‍ය පිවිසුම",
-  "auth.registerTitle": "ශිෂ්‍ය ගිණුමක් සාදන්න",
-  "auth.haveAccount": "දැනටමත් ගිණුමක් තිබේද?",
-  "auth.noAccount": "ගිණුමක් නොමැතිද?",
+  "auth.loginTitle": "කාර්ය මණ්ඩල පිවිසුම",
 
   // Form Phase 1 — Academic (SRS §2.2)
   "form1.title": "අධ්‍යයන තොරතුරු",
@@ -66,8 +56,21 @@ export const si: Record<TranslationKey, string> = {
   "gender.Female": "ගැහැණු",
   "gender.Other": "වෙනත්",
 
-  // Validation / misc
-  "common.required": "මෙම ක්ෂේත්‍රය අවශ්‍යයි",
+  // Students console
+  "student.newTitle": "නව ශිෂ්‍යයා",
+  "student.editTitle": "ශිෂ්‍ය තොරතුරු සංස්කරණය",
+  "student.count": "ශිෂ්‍යයෝ",
+
+  // Teachers console
+  "teacher.title": "ගුරු ගිණුම්",
+  "teacher.name": "නම",
+  "teacher.newTitle": "ගුරුවරයෙකු එක් කරන්න",
+
+  // Common
   "common.loading": "පූරණය වෙමින්…",
   "common.selectPlaceholder": "තෝරන්න…",
+  "common.actions": "ක්‍රියා",
+  "common.noResults": "වාර්තා නොමැත.",
+  "common.confirmDelete": "විශ්වාසද? මෙය පසුව වෙනස් කළ නොහැක.",
+  "common.all": "සියල්ල",
 };

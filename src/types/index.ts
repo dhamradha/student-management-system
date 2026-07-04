@@ -1,16 +1,15 @@
 /**
  * Domain types for the Student Data Management System.
- * Mirrors the Architecture Blueprint in the SRS (§5).
+ *
+ * Model: students are *records* (no accounts). Only staff authenticate —
+ * TEACHERs manage student data; a SUPER_ADMIN provisions teacher access.
  */
 
-export type Role = "SUPER_ADMIN" | "ADMIN" | "STUDENT";
+export type Role = "SUPER_ADMIN" | "TEACHER";
 
 export type Gender = "Male" | "Female" | "Other";
 
-/** Lifecycle of a student profile as it moves through onboarding + review. */
-export type ApprovalStatus = "incomplete" | "pending" | "approved" | "rejected";
-
-/** Form Phase 1 — Academic Data Dictionary (SRS §2.2). */
+/** Academic Data Dictionary (SRS §2.2). */
 export interface AcademicData {
   fullName: string;
   nameWithInitials: string;
@@ -21,7 +20,7 @@ export interface AcademicData {
   gender: Gender;
 }
 
-/** Form Phase 2 — Guardian Data Dictionary (SRS §2.3). */
+/** Guardian Data Dictionary (SRS §2.3). */
 export interface GuardianData {
   guardianName: string;
   contactNo: string;
@@ -30,23 +29,27 @@ export interface GuardianData {
   emergencyPhone: string;
 }
 
-/**
- * The Firestore `users/{uid}` document. One document per authenticated user,
- * keyed by their Firebase Auth UID (SRS §5).
- */
+/** A staff account — `users/{uid}`, keyed by Firebase Auth UID. */
 export interface UserDoc {
   uid: string;
   role: Role;
-  isApproved: boolean;
-  status: ApprovalStatus;
+  email: string;
+  displayName: string;
   institution: string;
-  admissionNo: string | null;
-  academicData: AcademicData | null;
-  guardianData: GuardianData | null;
-  /** Which onboarding phase the student has completed (0, 1, or 2). */
-  onboardingStep: 0 | 1 | 2;
   createdAt: string;
   updatedAt: string;
 }
 
-export type StudentDoc = UserDoc & { role: "STUDENT" };
+/**
+ * A student record — `students/{admissionNo}`. Managed entirely by staff;
+ * the document id is the admission number (unique per student).
+ */
+export interface StudentRecord {
+  id: string;
+  academicData: AcademicData;
+  guardianData: GuardianData;
+  createdBy: string; // teacher uid
+  createdByName: string;
+  createdAt: string;
+  updatedAt: string;
+}

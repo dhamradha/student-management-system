@@ -14,9 +14,21 @@ export default function LandingPage() {
   const { t } = useTranslation();
 
   const features = [
-    { icon: GraduationCap, title: t("form1.title"), body: t("app.tagline") },
-    { icon: ShieldCheck, title: t("status.approved"), body: t("nav.dashboard") },
-    { icon: Users, title: t("form2.title"), body: t("nav.students") },
+    {
+      icon: GraduationCap,
+      title: t("form1.title"),
+      body: "Academic profiles for every grade and class.",
+    },
+    {
+      icon: Users,
+      title: t("form2.title"),
+      body: "Guardian and emergency contact records.",
+    },
+    {
+      icon: ShieldCheck,
+      title: t("nav.teachers"),
+      body: "Role-based access, managed by the administrator.",
+    },
   ];
 
   return (
@@ -39,16 +51,10 @@ export default function LandingPage() {
               </p>
               <div className="flex flex-wrap gap-3">
                 <Link
-                  href="/register"
+                  href="/login"
                   className={cn(buttonVariants({ size: "lg" }), "gap-2")}
                 >
-                  {t("btn.register")} <ArrowRight className="size-4" />
-                </Link>
-                <Link
-                  href="/login"
-                  className={buttonVariants({ size: "lg", variant: "outline" })}
-                >
-                  {t("btn.login")}
+                  {t("btn.login")} <ArrowRight className="size-4" />
                 </Link>
               </div>
             </div>

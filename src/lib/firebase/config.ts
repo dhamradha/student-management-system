@@ -11,7 +11,3 @@ export const firebaseConfig = {
   messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 } as const;
-
-/** Domain used to derive a Firebase Auth email from an admission number. */
-export const STUDENT_EMAIL_DOMAIN =
-  process.env.NEXT_PUBLIC_STUDENT_EMAIL_DOMAIN ?? "students.hunuwala.lk";

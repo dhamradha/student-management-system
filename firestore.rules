@@ -1,9 +1,9 @@
 rules_version = '2';
 
-// RBAC for the Student Data Management System (SRS §3).
-//  - SUPER_ADMIN: full read/write/delete, manages roles.
-//  - ADMIN:       read all students, update (verify) student documents.
-//  - STUDENT:     read/write ONLY their own document; no cross-document queries.
+// RBAC for the Student Data Management System.
+// Students are records, not users. Only staff authenticate:
+//   - SUPER_ADMIN: full control; provisions/manages teacher accounts.
+//   - TEACHER:     full CRUD on student records.
 service cloud.firestore {
   match /databases/{database}/documents {
 
@@ -11,9 +11,8 @@ service cloud.firestore {
       return request.auth != null;
     }
 
-    // Role of the CURRENT user, or null if they have no document yet.
-    // Guarded with exists() so it never errors on a missing doc — critical
-    // during a student's first registration, before their profile is written.
+    // Role of the CURRENT user, or null if they have no staff document.
+    // Guarded with exists() so it never errors on a missing doc.
     function currentRole() {
       return exists(/databases/$(database)/documents/users/$(request.auth.uid))
         ? get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role
@@ -24,48 +23,20 @@ service cloud.firestore {
       return isSignedIn() && currentRole() == 'SUPER_ADMIN';
     }
 
-    function isAdmin() {
-      return isSignedIn() && currentRole() in ['ADMIN', 'SUPER_ADMIN'];
+    function isStaff() {
+      return isSignedIn() && currentRole() in ['TEACHER', 'SUPER_ADMIN'];
     }
 
-    function isSelf(uid) {
-      return isSignedIn() && request.auth.uid == uid;
-    }
-
-    // Students may create their own doc, but may never elevate their own role
-    // or self-approve. Only privileged fields are locked down here.
-    function studentSafeWrite() {
-      return request.resource.data.role == 'STUDENT'
-        && request.resource.data.isApproved == false
-        && request.resource.data.uid == request.auth.uid;
-    }
-
+    // Staff accounts. Provisioning happens server-side via the Admin SDK, so
+    // creation/updates from clients are restricted to the SUPER_ADMIN.
     match /users/{uid} {
-      // Read: self, or any admin.
-      allow read: if isSelf(uid) || isAdmin();
-
-      // Create: a student creating their own profile within safe bounds,
-      // or a super admin provisioning any account.
-      allow create: if isSuperAdmin()
-        || (isSelf(uid) && studentSafeWrite());
-
-      // Update:
-      //  - Student editing own doc (cannot flip role/isApproved).
-      //  - Admin verifying a student (approve/reject/update).
-      //  - Super admin: unrestricted.
-      allow update: if isSuperAdmin()
-        || (isAdmin() && resource.data.role == 'STUDENT')
-        || (isSelf(uid) && studentSafeWrite());
-
-      // Delete: super admin only.
-      allow delete: if isSuperAdmin();
+      allow read: if (isSignedIn() && request.auth.uid == uid) || isSuperAdmin();
+      allow create, update, delete: if isSuperAdmin();
     }
 
-    // Audit log — append-only for admins, readable by super admin (SRS §3).
-    match /logs/{logId} {
-      allow read: if isSuperAdmin();
-      allow create: if isAdmin();
-      allow update, delete: if false;
+    // Student records — any authenticated staff member has full CRUD.
+    match /students/{studentId} {
+      allow read, create, update, delete: if isStaff();
     }
   }
 }

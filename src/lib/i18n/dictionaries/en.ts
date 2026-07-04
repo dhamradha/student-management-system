@@ -1,7 +1,7 @@
 /**
  * English (en) string table. This is the canonical dictionary — its keys define
  * the `TranslationKey` type, and every other locale must supply the same keys.
- * Keys prefixed btn./status./form1./form2. come directly from the SRS (§2).
+ * form1.* / form2.* strings come from the SRS (§2).
  */
 export const en = {
   // App shell / branding
@@ -13,36 +13,27 @@ export const en = {
   "nav.home": "Home",
   "nav.dashboard": "Dashboard",
   "nav.students": "Students",
+  "nav.teachers": "Teachers",
   "nav.logout": "Log out",
-  "nav.language": "Language",
 
-  // Buttons (SRS §2.1)
-  "btn.next": "Next Step",
+  // Buttons
+  "btn.next": "Next",
   "btn.back": "Back",
-  "btn.submit": "Submit Application",
-  "btn.login": "Log in",
-  "btn.register": "Register",
-  "btn.approve": "Approve",
-  "btn.reject": "Reject",
   "btn.save": "Save",
-
-  // Status (SRS §2.1)
-  "status.incomplete": "Incomplete",
-  "status.pending": "Pending Verification",
-  "status.approved": "Verified Profile",
-  "status.rejected": "Rejected",
+  "btn.cancel": "Cancel",
+  "btn.login": "Log in",
+  "btn.edit": "Edit",
+  "btn.delete": "Delete",
+  "btn.addStudent": "Add Student",
+  "btn.addTeacher": "Add Teacher",
 
   // Auth
-  "auth.admissionNo": "Admission Number",
+  "auth.email": "Email",
   "auth.password": "Password",
-  "auth.confirmPassword": "Confirm Password",
-  "auth.loginTitle": "Student Log In",
-  "auth.registerTitle": "Create Student Account",
-  "auth.haveAccount": "Already have an account?",
-  "auth.noAccount": "Don't have an account?",
+  "auth.loginTitle": "Staff Log In",
 
   // Form Phase 1 — Academic (SRS §2.2)
-  "form1.title": "Academic Profile",
+  "form1.title": "Academic Details",
   "form1.fullName": "Full Name",
   "form1.nameWithInitials": "Name with Initials",
   "form1.admissionNo": "Admission Number",
@@ -64,10 +55,23 @@ export const en = {
   "gender.Female": "Female",
   "gender.Other": "Other",
 
-  // Validation / misc
-  "common.required": "This field is required",
+  // Students console
+  "student.newTitle": "New Student",
+  "student.editTitle": "Edit Student",
+  "student.count": "students",
+
+  // Teachers console
+  "teacher.title": "Teacher Accounts",
+  "teacher.name": "Name",
+  "teacher.newTitle": "Add a Teacher",
+
+  // Common
   "common.loading": "Loading…",
   "common.selectPlaceholder": "Select…",
+  "common.actions": "Actions",
+  "common.noResults": "No records found.",
+  "common.confirmDelete": "Are you sure? This cannot be undone.",
+  "common.all": "All",
 } as const;
 
 export type TranslationKey = keyof typeof en;

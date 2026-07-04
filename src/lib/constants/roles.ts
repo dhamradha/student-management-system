@@ -2,17 +2,19 @@ import type { Role } from "@/types";
 
 export const ROLES = {
   SUPER_ADMIN: "SUPER_ADMIN",
-  ADMIN: "ADMIN",
-  STUDENT: "STUDENT",
+  TEACHER: "TEACHER",
 } as const satisfies Record<string, Role>;
 
-/** Landing route for each role after authentication. */
+/** Every staff role lands on the student console after login. */
 export const ROLE_HOME: Record<Role, string> = {
-  SUPER_ADMIN: "/super-admin",
-  ADMIN: "/admin",
-  STUDENT: "/student",
+  SUPER_ADMIN: "/students",
+  TEACHER: "/students",
 };
 
-export function isAdminRole(role: Role): boolean {
-  return role === ROLES.ADMIN || role === ROLES.SUPER_ADMIN;
+export function isSuperAdmin(role: Role | undefined): boolean {
+  return role === ROLES.SUPER_ADMIN;
+}
+
+export function isStaff(role: Role | undefined): boolean {
+  return role === ROLES.TEACHER || role === ROLES.SUPER_ADMIN;
 }

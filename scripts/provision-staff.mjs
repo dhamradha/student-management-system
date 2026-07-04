@@ -1,9 +1,10 @@
 /**
- * Provision an ADMIN or SUPER_ADMIN account (there is no self-serve UI for
- * staff — the first SUPER_ADMIN must be bootstrapped here).
+ * Provision a TEACHER or SUPER_ADMIN staff account. The first SUPER_ADMIN must
+ * be bootstrapped here (there is no self-serve staff sign-up); afterwards a
+ * SUPER_ADMIN can add teachers from the Teachers console.
  *
  * Usage (Node 22+, loads secrets from .env.local):
- *   node --env-file=.env.local scripts/provision-staff.mjs <email> <password> <ADMIN|SUPER_ADMIN>
+ *   node --env-file=.env.local scripts/provision-staff.mjs <email> <password> "<Display Name>" <TEACHER|SUPER_ADMIN>
  *
  * Requires FIREBASE_ADMIN_* service-account vars in .env.local.
  */
@@ -11,12 +12,12 @@ import { cert, getApps, initializeApp } from "firebase-admin/app";
 import { getAuth } from "firebase-admin/auth";
 import { getFirestore } from "firebase-admin/firestore";
 
-const [email, password, roleArg] = process.argv.slice(2);
-const role = (roleArg ?? "ADMIN").toUpperCase();
+const [email, password, displayName, roleArg] = process.argv.slice(2);
+const role = (roleArg ?? "TEACHER").toUpperCase();
 
-if (!email || !password || !["ADMIN", "SUPER_ADMIN"].includes(role)) {
+if (!email || !password || !displayName || !["TEACHER", "SUPER_ADMIN"].includes(role)) {
   console.error(
-    "Usage: node --env-file=.env.local scripts/provision-staff.mjs <email> <password> <ADMIN|SUPER_ADMIN>",
+    'Usage: node --env-file=.env.local scripts/provision-staff.mjs <email> <password> "<Display Name>" <TEACHER|SUPER_ADMIN>',
   );
   process.exit(1);
 }
@@ -37,18 +38,16 @@ if (!getApps().length) {
 const auth = getAuth();
 const db = getFirestore();
 
-// Create (or reuse) the auth user.
 let user;
 try {
   user = await auth.getUserByEmail(email);
-  await auth.updateUser(user.uid, { password });
+  await auth.updateUser(user.uid, { password, displayName });
   console.log(`Reusing existing auth user ${user.uid}`);
 } catch {
-  user = await auth.createUser({ email, password, emailVerified: true });
+  user = await auth.createUser({ email, password, displayName, emailVerified: true });
   console.log(`Created auth user ${user.uid}`);
 }
 
-// Mirror the role into a custom claim (fast checks) and the Firestore doc.
 await auth.setCustomUserClaims(user.uid, { role });
 
 const now = new Date().toISOString();
@@ -59,18 +58,14 @@ await db
     {
       uid: user.uid,
       role,
-      isApproved: true,
-      status: "approved",
+      email,
+      displayName,
       institution: "Hunuwala Dharmaraja Vidyalaya",
-      admissionNo: null,
-      academicData: null,
-      guardianData: null,
-      onboardingStep: 2,
       createdAt: now,
       updatedAt: now,
     },
     { merge: true },
   );
 
-console.log(`✓ ${email} provisioned as ${role}`);
+console.log(`✓ ${displayName} <${email}> provisioned as ${role}`);
 process.exit(0);

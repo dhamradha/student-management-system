@@ -1,64 +1,79 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { LogOut } from "lucide-react";
 
 import { Logo } from "@/components/brand/logo";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { useAuth } from "@/features/auth/auth-provider";
-import { ROLE_HOME } from "@/lib/constants/roles";
+import { isSuperAdmin } from "@/lib/constants/roles";
 import { useTranslation } from "@/lib/i18n/provider";
+import { cn } from "@/lib/utils";
 
 export function SiteHeader() {
   const { t } = useTranslation();
   const { user, profile, logout } = useAuth();
   const router = useRouter();
+  const pathname = usePathname();
 
   async function handleLogout() {
     await logout();
     router.push("/");
   }
 
+  const navLinks =
+    user && profile
+      ? [
+          { href: "/students", label: t("nav.students") },
+          ...(isSuperAdmin(profile.role)
+            ? [{ href: "/teachers", label: t("nav.teachers") }]
+            : []),
+        ]
+      : [];
+
   return (
     <header className="bg-background/80 sticky top-0 z-40 w-full border-b backdrop-blur">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
-        <Logo />
-        <nav className="flex items-center gap-2">
+        <div className="flex items-center gap-6">
+          <Logo />
+          <nav className="hidden items-center gap-1 md:flex">
+            {navLinks.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                className={cn(
+                  "rounded-md px-3 py-1.5 text-sm font-medium transition-colors",
+                  pathname.startsWith(link.href)
+                    ? "bg-primary/10 text-primary"
+                    : "text-muted-foreground hover:text-foreground",
+                )}
+              >
+                {link.label}
+              </Link>
+            ))}
+          </nav>
+        </div>
+
+        <div className="flex items-center gap-2">
           <LanguageSwitcher />
           {user && profile ? (
-            <>
-              <Link
-                href={ROLE_HOME[profile.role]}
-                className={buttonVariants({ variant: "ghost", size: "sm" })}
-              >
-                {t("nav.dashboard")}
-              </Link>
-              <Button
-                variant="outline"
-                size="sm"
-                className="gap-2"
-                onClick={handleLogout}
-              >
-                <LogOut className="size-4" />
-                {t("nav.logout")}
-              </Button>
-            </>
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-2"
+              onClick={handleLogout}
+            >
+              <LogOut className="size-4" />
+              {t("nav.logout")}
+            </Button>
           ) : (
-            <>
-              <Link
-                href="/login"
-                className={buttonVariants({ variant: "ghost", size: "sm" })}
-              >
-                {t("btn.login")}
-              </Link>
-              <Link href="/register" className={buttonVariants({ size: "sm" })}>
-                {t("btn.register")}
-              </Link>
-            </>
+            <Link href="/login" className={buttonVariants({ size: "sm" })}>
+              {t("btn.login")}
+            </Link>
           )}
-        </nav>
+        </div>
       </div>
     </header>
   );
