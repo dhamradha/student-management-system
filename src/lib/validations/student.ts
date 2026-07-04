@@ -40,6 +40,25 @@ export const studentSchema = z
 
 export type StudentInput = z.infer<typeof studentSchema>;
 
+/** A teacher directory record (no login). Keyed by NIC. */
+export const teacherSchema = z.object({
+  fullName: z.string().trim().min(2, "Full name is required"),
+  nameWithInitials: z.string().trim(),
+  nic: z
+    .string()
+    .trim()
+    .regex(/^([0-9]{9}[vVxX]|[0-9]{12})$/, "Enter a valid NIC (e.g. 991234567V)"),
+  gender: z.string(),
+  dob: z.string(),
+  contactNo: phone,
+  email: z.union([z.literal(""), z.string().email("Enter a valid email")]),
+  address: z.string().trim(),
+  subject: z.string().trim(),
+  qualifications: z.string().trim(),
+});
+
+export type TeacherInput = z.infer<typeof teacherSchema>;
+
 /** Staff (TEACHER / SUPER_ADMIN) login. */
 export const staffLoginSchema = z.object({
   email: z.string().trim().email("Enter a valid email"),

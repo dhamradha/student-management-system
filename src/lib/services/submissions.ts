@@ -51,6 +51,7 @@ export async function createSubmission(
     id: ref.id,
     formId: form.id,
     formTitle: form.title,
+    target: form.target,
     grade,
     classStream,
     answers,

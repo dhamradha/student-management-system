@@ -14,16 +14,22 @@ import {
 } from "@/components/ui/select";
 import {
   FIELD_TYPES,
-  MAPPABLE_FIELDS,
   NONE_MAP,
   fieldTypeMeta,
+  mappableFields,
 } from "@/lib/constants/forms";
-import type { FieldType, FormField, StudentFieldKey } from "@/types/forms";
+import type {
+  FieldType,
+  FormField,
+  FormTarget,
+  MapKey,
+} from "@/types/forms";
 
 interface Props {
   field: FormField;
   index: number;
   total: number;
+  target: FormTarget;
   onChange: (patch: Partial<FormField>) => void;
   onRemove: () => void;
   onMove: (dir: -1 | 1) => void;
@@ -33,11 +39,13 @@ export function FieldEditor({
   field,
   index,
   total,
+  target,
   onChange,
   onRemove,
   onMove,
 }: Props) {
   const meta = fieldTypeMeta(field.type);
+  const mapOptions = mappableFields(target);
 
   function setValidation(patch: Partial<FormField["validation"]>) {
     onChange({ validation: { ...field.validation, ...patch } });
@@ -133,7 +141,7 @@ export function FieldEditor({
             value={field.mapTo ?? NONE_MAP}
             onValueChange={(v) =>
               onChange({
-                mapTo: !v || v === NONE_MAP ? null : (v as StudentFieldKey),
+                mapTo: !v || v === NONE_MAP ? null : (v as MapKey),
               })
             }
           >
@@ -142,7 +150,7 @@ export function FieldEditor({
             </SelectTrigger>
             <SelectContent>
               <SelectItem value={NONE_MAP}>None (extra info)</SelectItem>
-              {MAPPABLE_FIELDS.map((m) => (
+              {mapOptions.map((m) => (
                 <SelectItem key={m.key} value={m.key}>
                   {m.label}
                 </SelectItem>

@@ -23,7 +23,7 @@ import { createForm, updateForm, type FormInput } from "@/lib/services/forms";
 import { formDefinitionSchema } from "@/lib/validations/form-builder";
 import { useTranslation } from "@/lib/i18n/provider";
 import { cn } from "@/lib/utils";
-import type { FormDoc, FormField, FormStatus } from "@/types/forms";
+import type { FormDoc, FormField, FormStatus, FormTarget } from "@/types/forms";
 
 function newField(): FormField {
   return {
@@ -75,6 +75,7 @@ export function FormBuilder({
 
   const [title, setTitle] = useState(initial?.title ?? "");
   const [description, setDescription] = useState(initial?.description ?? "");
+  const [target, setTarget] = useState<FormTarget>(initial?.target ?? "student");
   const [grades, setGrades] = useState<string[]>(initial?.grades ?? []);
   const [classStreams, setClassStreams] = useState<string[]>(
     initial?.classStreams ?? [],
@@ -108,6 +109,17 @@ export function FormBuilder({
     );
   }
 
+  function switchTarget(nextTarget: FormTarget) {
+    if (nextTarget === target) return;
+    setTarget(nextTarget);
+    // Field mappings differ per target, so clear them on switch.
+    setFields((prev) => prev.map((f) => ({ ...f, mapTo: null })));
+    if (nextTarget === "teacher") {
+      setGrades([]);
+      setClassStreams([]);
+    }
+  }
+
   function patchField(id: string, patch: Partial<FormField>) {
     setFields((prev) => prev.map((f) => (f.id === id ? { ...f, ...patch } : f)));
   }
@@ -126,6 +138,7 @@ export function FormBuilder({
     id: "preview",
     title: title || "Untitled form",
     description,
+    target,
     grades,
     classStreams,
     status: "published",
@@ -140,8 +153,9 @@ export function FormBuilder({
     const input: FormInput = {
       title,
       description,
-      grades,
-      classStreams,
+      target,
+      grades: target === "student" ? grades : [],
+      classStreams: target === "student" ? classStreams : [],
       status,
       fields,
     };
@@ -198,6 +212,23 @@ export function FormBuilder({
           <CardTitle className="text-primary">Form details</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label>This form collects</Label>
+            <div className="flex flex-wrap gap-2">
+              <Chip
+                active={target === "student"}
+                onClick={() => switchTarget("student")}
+              >
+                Student details
+              </Chip>
+              <Chip
+                active={target === "teacher"}
+                onClick={() => switchTarget("teacher")}
+              >
+                Teacher details
+              </Chip>
+            </div>
+          </div>
           <div className="space-y-1.5">
             <Label>Title</Label>
             <Input
@@ -215,44 +246,48 @@ export function FormBuilder({
               placeholder="Shown to students at the top of the form."
             />
           </div>
-          <div className="space-y-2">
-            <Label>Grades</Label>
-            <div className="flex flex-wrap gap-2">
-              {GRADES.map((g) => (
-                <Chip
-                  key={g}
-                  active={grades.includes(g)}
-                  onClick={() => toggleGrade(g)}
-                >
-                  Grade {g}
-                </Chip>
-              ))}
-            </div>
-          </div>
-          <div className="space-y-2">
-            <Label>Classes / Streams</Label>
-            {availableClasses.length === 0 ? (
-              <p className="text-muted-foreground text-sm">
-                Select one or more grades first.
-              </p>
-            ) : (
-              <div className="flex flex-wrap gap-2">
-                {availableClasses.map((c) => (
-                  <Chip
-                    key={c}
-                    active={classStreams.includes(c)}
-                    onClick={() => toggleClass(c)}
-                  >
-                    {c}
-                  </Chip>
-                ))}
+          {target === "student" && (
+            <>
+              <div className="space-y-2">
+                <Label>Grades</Label>
+                <div className="flex flex-wrap gap-2">
+                  {GRADES.map((g) => (
+                    <Chip
+                      key={g}
+                      active={grades.includes(g)}
+                      onClick={() => toggleGrade(g)}
+                    >
+                      Grade {g}
+                    </Chip>
+                  ))}
+                </div>
               </div>
-            )}
-            <p className="text-muted-foreground text-xs">
-              Leave empty to skip asking the class. Pick several to reuse this
-              form across classes — students choose theirs.
-            </p>
-          </div>
+              <div className="space-y-2">
+                <Label>Classes / Streams</Label>
+                {availableClasses.length === 0 ? (
+                  <p className="text-muted-foreground text-sm">
+                    Select one or more grades first.
+                  </p>
+                ) : (
+                  <div className="flex flex-wrap gap-2">
+                    {availableClasses.map((c) => (
+                      <Chip
+                        key={c}
+                        active={classStreams.includes(c)}
+                        onClick={() => toggleClass(c)}
+                      >
+                        {c}
+                      </Chip>
+                    ))}
+                  </div>
+                )}
+                <p className="text-muted-foreground text-xs">
+                  Leave empty to skip asking the class. Pick several to reuse
+                  this form across classes — students choose theirs.
+                </p>
+              </div>
+            </>
+          )}
         </CardContent>
       </Card>
 
@@ -263,6 +298,7 @@ export function FormBuilder({
             field={field}
             index={i}
             total={fields.length}
+            target={target}
             onChange={(patch) => patchField(field.id, patch)}
             onRemove={() =>
               setFields((prev) => prev.filter((f) => f.id !== field.id))

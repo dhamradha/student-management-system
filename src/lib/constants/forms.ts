@@ -1,4 +1,9 @@
-import type { FieldType, FormField, StudentFieldKey } from "@/types/forms";
+import type {
+  FieldType,
+  FormField,
+  FormTarget,
+  MapKey,
+} from "@/types/forms";
 
 interface FieldTypeMeta {
   value: FieldType;
@@ -24,8 +29,13 @@ export function fieldTypeMeta(type: FieldType): FieldTypeMeta {
   return FIELD_TYPES.find((f) => f.value === type) ?? FIELD_TYPES[0];
 }
 
+interface MapField {
+  key: MapKey;
+  label: string;
+}
+
 /** Student attributes a field can map to. `grade` is fixed per form, not here. */
-export const MAPPABLE_FIELDS: { key: StudentFieldKey; label: string }[] = [
+export const MAPPABLE_STUDENT_FIELDS: MapField[] = [
   { key: "fullName", label: "Full Name" },
   { key: "nameWithInitials", label: "Name with Initials" },
   { key: "admissionNo", label: "Admission Number" },
@@ -39,6 +49,26 @@ export const MAPPABLE_FIELDS: { key: StudentFieldKey; label: string }[] = [
   { key: "emergencyPhone", label: "Emergency Phone Number" },
 ];
 
+/** Teacher attributes a field can map to. */
+export const MAPPABLE_TEACHER_FIELDS: MapField[] = [
+  { key: "fullName", label: "Full Name" },
+  { key: "nameWithInitials", label: "Name with Initials" },
+  { key: "nic", label: "NIC" },
+  { key: "gender", label: "Gender" },
+  { key: "dob", label: "Date of Birth" },
+  { key: "contactNo", label: "Contact Number" },
+  { key: "email", label: "Email" },
+  { key: "address", label: "Address" },
+  { key: "subject", label: "Subject" },
+  { key: "qualifications", label: "Qualifications" },
+];
+
+export function mappableFields(target: FormTarget): MapField[] {
+  return target === "teacher"
+    ? MAPPABLE_TEACHER_FIELDS
+    : MAPPABLE_STUDENT_FIELDS;
+}
+
 export const NONE_MAP = "__none__";
 
 /**
@@ -49,7 +79,7 @@ export const NONE_MAP = "__none__";
 interface FieldSeed {
   label: string;
   type: FieldType;
-  mapTo: StudentFieldKey;
+  mapTo: MapKey;
   required: boolean;
   options?: string[];
 }
@@ -67,8 +97,21 @@ const DEFAULT_STUDENT_SEEDS: FieldSeed[] = [
   { label: "Emergency Phone Number", type: "phone", mapTo: "emergencyPhone", required: true },
 ];
 
-export function buildDefaultStudentFields(): FormField[] {
-  return DEFAULT_STUDENT_SEEDS.map((seed) => ({
+const DEFAULT_TEACHER_SEEDS: FieldSeed[] = [
+  { label: "Full Name", type: "short_text", mapTo: "fullName", required: true },
+  { label: "Name with Initials", type: "short_text", mapTo: "nameWithInitials", required: true },
+  { label: "NIC", type: "short_text", mapTo: "nic", required: true },
+  { label: "Gender", type: "radio", mapTo: "gender", required: false, options: ["Male", "Female", "Other"] },
+  { label: "Date of Birth", type: "date", mapTo: "dob", required: false },
+  { label: "Contact Number", type: "phone", mapTo: "contactNo", required: true },
+  { label: "Email", type: "email", mapTo: "email", required: false },
+  { label: "Address", type: "long_text", mapTo: "address", required: false },
+  { label: "Subject", type: "short_text", mapTo: "subject", required: false },
+  { label: "Qualifications", type: "long_text", mapTo: "qualifications", required: false },
+];
+
+function buildFields(seeds: FieldSeed[]): FormField[] {
+  return seeds.map((seed) => ({
     id: crypto.randomUUID(),
     label: seed.label,
     type: seed.type,
@@ -77,4 +120,12 @@ export function buildDefaultStudentFields(): FormField[] {
     mapTo: seed.mapTo,
     validation: {},
   }));
+}
+
+export function buildDefaultStudentFields(): FormField[] {
+  return buildFields(DEFAULT_STUDENT_SEEDS);
+}
+
+export function buildDefaultTeacherFields(): FormField[] {
+  return buildFields(DEFAULT_TEACHER_SEEDS);
 }

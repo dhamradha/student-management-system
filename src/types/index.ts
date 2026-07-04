@@ -53,3 +53,30 @@ export interface StudentRecord {
   createdAt: string;
   updatedAt: string;
 }
+
+/** Teacher directory profile (data only — not a login account). */
+export interface TeacherProfileData {
+  fullName: string;
+  nameWithInitials: string;
+  nic: string;
+  gender: string;
+  dob: string;
+  contactNo: string;
+  email: string;
+  address: string;
+  subject: string;
+  qualifications: string;
+}
+
+/**
+ * A teacher directory record — `teacherRecords/{nic}`. Profile data managed by
+ * staff; separate from staff login accounts (`users`).
+ */
+export interface TeacherRecord {
+  id: string;
+  profile: TeacherProfileData;
+  createdBy: string;
+  createdByName: string;
+  createdAt: string;
+  updatedAt: string;
+}

@@ -24,17 +24,19 @@ import {
 } from "@/components/ui/table";
 import { useAuth } from "@/features/auth/auth-provider";
 import { StudentForm } from "@/features/students/student-form";
+import { TeacherRecordForm } from "@/features/teacher-records/teacher-record-form";
 import { usePaged } from "@/hooks/use-paged";
 import { PAGE_SIZE, type Cursor } from "@/lib/pagination";
 import { getForm } from "@/lib/services/forms";
 import { createStudent } from "@/lib/services/students";
+import { createTeacherRecord } from "@/lib/services/teacher-records";
 import {
   deleteSubmission,
   pageSubmissions,
   setSubmissionStatus,
 } from "@/lib/services/submissions";
 import { useTranslation } from "@/lib/i18n/provider";
-import type { StudentInput } from "@/lib/validations/student";
+import type { StudentInput, TeacherInput } from "@/lib/validations/student";
 import type { FormDoc, FormSubmission } from "@/types/forms";
 
 export function SubmissionsReview({ formId }: { formId: string }) {
@@ -75,15 +77,31 @@ export function SubmissionsReview({ formId }: { formId: string }) {
     }
   }
 
-  async function approve(values: StudentInput) {
+  async function finalizeApproval(id: string) {
+    await setSubmissionStatus(id, "approved");
+    await deleteSubmission(id).catch(() => {});
+    toast.success("Record added from submission.");
+    setActive(null);
+    reload();
+  }
+
+  async function approveStudent(values: StudentInput) {
     if (!user || !profile || !active) return;
     try {
       await createStudent(values, user.uid, profile.displayName);
-      await setSubmissionStatus(active.id, "approved");
-      await deleteSubmission(active.id).catch(() => {});
-      toast.success("Student added from submission.");
-      setActive(null);
-      reload();
+      await finalizeApproval(active.id);
+    } catch (err) {
+      toast.error(
+        err instanceof Error ? err.message : "Could not approve submission.",
+      );
+    }
+  }
+
+  async function approveTeacher(values: TeacherInput) {
+    if (!user || !profile || !active) return;
+    try {
+      await createTeacherRecord(values, user.uid, profile.displayName);
+      await finalizeApproval(active.id);
     } catch (err) {
       toast.error(
         err instanceof Error ? err.message : "Could not approve submission.",
@@ -92,11 +110,15 @@ export function SubmissionsReview({ formId }: { formId: string }) {
   }
 
   if (active && form) {
-    const defaults = {
+    const isTeacher = form.target === "teacher";
+    const studentDefaults = {
       ...active.mapped,
       grade: active.grade,
       classStream: active.classStream ?? active.mapped.classStream ?? "",
     } as unknown as Partial<StudentInput>;
+    const teacherDefaults = {
+      ...active.mapped,
+    } as unknown as Partial<TeacherInput>;
     return (
       <div className="space-y-4">
         <Button variant="ghost" className="gap-2" onClick={() => setActive(null)}>
@@ -129,15 +151,23 @@ export function SubmissionsReview({ formId }: { formId: string }) {
         <Card>
           <CardHeader>
             <CardTitle className="text-primary">
-              Review & save as student
+              Review & save as {isTeacher ? "teacher" : "student"}
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <StudentForm
-              defaultValues={defaults}
-              onSubmit={approve}
-              submitLabel="Approve & save"
-            />
+            {isTeacher ? (
+              <TeacherRecordForm
+                defaultValues={teacherDefaults}
+                onSubmit={approveTeacher}
+                submitLabel="Approve & save"
+              />
+            ) : (
+              <StudentForm
+                defaultValues={studentDefaults}
+                onSubmit={approveStudent}
+                submitLabel="Approve & save"
+              />
+            )}
           </CardContent>
         </Card>
       </div>

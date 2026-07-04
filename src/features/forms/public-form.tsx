@@ -52,8 +52,9 @@ export function PublicForm({
   const { t } = useTranslation();
   const [done, setDone] = useState(false);
 
-  const askGrade = form.grades.length > 1;
-  const askClass = form.classStreams.length > 1;
+  const isStudent = form.target === "student";
+  const askGrade = isStudent && form.grades.length > 1;
+  const askClass = isStudent && form.classStreams.length > 1;
   const [grade, setGrade] = useState(form.grades.length === 1 ? form.grades[0] : "");
   const [classStream, setClassStream] = useState(
     form.classStreams.length === 1 ? form.classStreams[0] : "",
@@ -91,8 +92,12 @@ export function PublicForm({
       await createSubmission(
         form,
         values as Record<string, string | string[]>,
-        askGrade ? grade : form.grades[0],
-        form.classStreams.length === 0 ? null : classStream || null,
+        isStudent ? (askGrade ? grade : form.grades[0]) : "",
+        isStudent
+          ? form.classStreams.length === 0
+            ? null
+            : classStream || null
+          : null,
       );
       setDone(true);
     } catch {

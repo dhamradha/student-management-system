@@ -13,6 +13,7 @@ export const en = {
   "nav.home": "Home",
   "nav.dashboard": "Dashboard",
   "nav.students": "Students",
+  "nav.teacherRecords": "Teacher Records",
   "nav.forms": "Forms",
   "nav.teachers": "Teachers",
   "nav.logout": "Log out",

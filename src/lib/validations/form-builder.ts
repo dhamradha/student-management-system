@@ -21,7 +21,8 @@ export const formDefinitionSchema = z
   .object({
     title: z.string().trim().min(1, "Title is required"),
     description: z.string(),
-    grades: z.array(z.enum(GRADES)).min(1, "Select at least one grade"),
+    target: z.enum(["student", "teacher"]),
+    grades: z.array(z.enum(GRADES)),
     classStreams: z.array(z.string()),
     status: z.enum(["draft", "published"]),
     fields: z
@@ -48,6 +49,13 @@ export const formDefinitionSchema = z
       .min(1, "Add at least one field"),
   })
   .superRefine((form, ctx) => {
+    if (form.target === "student" && form.grades.length < 1) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["grades"],
+        message: "Select at least one grade",
+      });
+    }
     form.fields.forEach((field, i) => {
       if (fieldTypeMeta(field.type).hasOptions) {
         const filled = field.options.filter((o) => o.trim());

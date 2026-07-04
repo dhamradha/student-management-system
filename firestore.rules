@@ -37,6 +37,11 @@ service cloud.firestore {
       allow read, create, update, delete: if isStaff();
     }
 
+    // Teacher directory records (profile data, not login accounts).
+    match /teacherRecords/{recordId} {
+      allow read, create, update, delete: if isStaff();
+    }
+
     // Forms — staff manage; the public may READ only PUBLISHED forms
     // (so a shared link renders without a login).
     match /forms/{formId} {

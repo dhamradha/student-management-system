@@ -27,6 +27,7 @@ export function SiteHeader() {
     user && profile
       ? [
           { href: "/students", label: t("nav.students") },
+          { href: "/teacher-records", label: t("nav.teacherRecords") },
           { href: "/forms", label: t("nav.forms") },
           ...(isSuperAdmin(profile.role)
             ? [{ href: "/teachers", label: t("nav.teachers") }]

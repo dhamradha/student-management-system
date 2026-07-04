@@ -12,10 +12,12 @@ export type FieldType =
   | "radio"
   | "checkbox";
 
+/** What a form collects — determines the mappable fields + where a submission lands. */
+export type FormTarget = "student" | "teacher";
+
 /**
- * Known student attributes a field can map to. When a submission is approved,
- * mapped answers pre-fill the student record; the form's grade is applied
- * separately (grade is fixed per form, not asked in the form).
+ * Known attributes a field can map to. When a submission is approved, mapped
+ * answers pre-fill the resulting record. The set depends on the form target.
  */
 export type StudentFieldKey =
   | "fullName"
@@ -29,6 +31,20 @@ export type StudentFieldKey =
   | "address"
   | "emergencyName"
   | "emergencyPhone";
+
+export type TeacherFieldKey =
+  | "fullName"
+  | "nameWithInitials"
+  | "nic"
+  | "gender"
+  | "dob"
+  | "contactNo"
+  | "email"
+  | "address"
+  | "subject"
+  | "qualifications";
+
+export type MapKey = StudentFieldKey | TeacherFieldKey;
 
 export interface FieldValidation {
   minLength?: number;
@@ -47,7 +63,7 @@ export interface FormField {
   helpText?: string;
   placeholder?: string;
   options: string[]; // used by dropdown / radio / checkbox
-  mapTo: StudentFieldKey | null;
+  mapTo: MapKey | null;
   validation: FieldValidation;
 }
 
@@ -57,7 +73,9 @@ export interface FormDoc {
   id: string;
   title: string;
   description: string;
-  /** Grades this form targets. If more than one, the student picks theirs. */
+  /** What this form collects — student or teacher details. */
+  target: FormTarget;
+  /** Grades this form targets (students only). If more than one, the student picks theirs. */
   grades: string[];
   /** Allowed class/streams. Empty = not asked; >1 = the student picks theirs. */
   classStreams: string[];
@@ -75,6 +93,7 @@ export interface FormSubmission {
   id: string;
   formId: string;
   formTitle: string;
+  target: FormTarget;
   grade: string;
   classStream: string | null;
   /** Raw answers keyed by field id. */

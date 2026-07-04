@@ -14,6 +14,7 @@ export const si: Record<TranslationKey, string> = {
   "nav.home": "මුල් පිටුව",
   "nav.dashboard": "පාලක පුවරුව",
   "nav.students": "ශිෂ්‍යයෝ",
+  "nav.teacherRecords": "ගුරු තොරතුරු",
   "nav.forms": "පෝරම",
   "nav.teachers": "ගුරුවරු",
   "nav.logout": "පිටවීම",

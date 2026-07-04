@@ -130,6 +130,12 @@ export function FormsList() {
 
               <CardContent className="flex-1">
                 <div className="flex flex-wrap gap-1.5">
+                  <Badge
+                    variant="outline"
+                    className="border-primary/30 text-primary font-medium capitalize"
+                  >
+                    {form.target}
+                  </Badge>
                   {form.grades.map((g) => (
                     <Badge key={g} variant="secondary" className="font-normal">
                       Grade {g}

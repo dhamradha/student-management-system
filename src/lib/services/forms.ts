@@ -11,6 +11,7 @@ import {
   startAfter,
   updateDoc,
   where,
+  type DocumentData,
   type QueryConstraint,
 } from "firebase/firestore";
 
@@ -24,9 +25,26 @@ function formRef(id: string) {
   return doc(db, "forms", id);
 }
 
+/** Backfill defaults for forms created before a field existed (e.g. target). */
+function normalizeForm(data: DocumentData): FormDoc {
+  return {
+    ...(data as FormDoc),
+    target: data.target || "student",
+    grades: data.grades ?? [],
+    classStreams: data.classStreams ?? [],
+    fields: data.fields ?? [],
+  };
+}
+
 export type FormInput = Pick<
   FormDoc,
-  "title" | "description" | "grades" | "classStreams" | "status" | "fields"
+  | "title"
+  | "description"
+  | "target"
+  | "grades"
+  | "classStreams"
+  | "status"
+  | "fields"
 >;
 
 /** Create a form; returns the generated id (used in the share link). */
@@ -62,7 +80,7 @@ export async function deleteForm(id: string): Promise<void> {
 
 export async function getForm(id: string): Promise<FormDoc | null> {
   const snap = await getDoc(formRef(id));
-  return snap.exists() ? (snap.data() as FormDoc) : null;
+  return snap.exists() ? normalizeForm(snap.data()) : null;
 }
 
 /** Public read — returns the form only if it is published. */
@@ -85,7 +103,7 @@ export async function pageForms(
   const hasMore = docs.length > pageSize;
   const pageDocs = hasMore ? docs.slice(0, pageSize) : docs;
   return {
-    records: pageDocs.map((d) => d.data() as FormDoc),
+    records: pageDocs.map((d) => normalizeForm(d.data())),
     cursor: pageDocs[pageDocs.length - 1] ?? null,
     hasMore,
   };
