@@ -1,29 +1,39 @@
 "use client";
 
-import { Languages } from "lucide-react";
-
-import { Button } from "@/components/ui/button";
 import { LOCALE_LABELS, LOCALES } from "@/lib/i18n";
 import { useTranslation } from "@/lib/i18n/provider";
+import { cn } from "@/lib/utils";
 
 /**
- * EN/SI toggle. Switches language at runtime with no page reload and persists
- * to LocalStorage via the i18n provider (SRS §2).
+ * EN/SI segmented toggle. Both languages are shown at once and the *active*
+ * one is highlighted, so there is no ambiguity about the current language.
+ * Switching is instant (no reload) and persisted to LocalStorage (SRS §2).
  */
 export function LanguageSwitcher() {
   const { locale, setLocale } = useTranslation();
-  const next = LOCALES.find((l) => l !== locale) ?? "en";
 
   return (
-    <Button
-      variant="outline"
-      size="sm"
-      className="gap-2"
-      onClick={() => setLocale(next)}
-      aria-label={`Switch to ${LOCALE_LABELS[next]}`}
+    <div
+      role="group"
+      aria-label="Language"
+      className="bg-muted inline-flex items-center rounded-md p-0.5"
     >
-      <Languages className="size-4" />
-      {LOCALE_LABELS[next]}
-    </Button>
+      {LOCALES.map((l) => (
+        <button
+          key={l}
+          type="button"
+          onClick={() => setLocale(l)}
+          aria-pressed={locale === l}
+          className={cn(
+            "rounded-[6px] px-2.5 py-1 text-xs font-medium transition-colors",
+            locale === l
+              ? "bg-primary text-primary-foreground shadow-sm"
+              : "text-muted-foreground hover:text-foreground",
+          )}
+        >
+          {LOCALE_LABELS[l]}
+        </button>
+      ))}
+    </div>
   );
 }

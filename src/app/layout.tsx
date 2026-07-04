@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Noto_Sans_Sinhala } from "next/font/google";
+import { Geist_Mono, Noto_Sans_Sinhala, Poppins } from "next/font/google";
 
 import { Providers } from "@/components/providers";
 import "./globals.css";
 
-const geistSans = Geist({
+const poppins = Poppins({
   variable: "--font-sans",
   subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
 });
 
 const geistMono = Geist_Mono({
@@ -39,7 +40,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} ${notoSinhala.variable} min-h-svh antialiased`}
+        className={`${poppins.variable} ${geistMono.variable} ${notoSinhala.variable} min-h-svh antialiased`}
       >
         <Providers>{children}</Providers>
       </body>

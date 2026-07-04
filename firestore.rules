@@ -11,21 +11,21 @@ service cloud.firestore {
       return request.auth != null;
     }
 
-    function userDoc(uid) {
-      return get(/databases/$(database)/documents/users/$(uid)).data;
-    }
-
-    function roleOf(uid) {
-      return userDoc(uid).role;
+    // Role of the CURRENT user, or null if they have no document yet.
+    // Guarded with exists() so it never errors on a missing doc — critical
+    // during a student's first registration, before their profile is written.
+    function currentRole() {
+      return exists(/databases/$(database)/documents/users/$(request.auth.uid))
+        ? get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role
+        : null;
     }
 
     function isSuperAdmin() {
-      return isSignedIn() && roleOf(request.auth.uid) == 'SUPER_ADMIN';
+      return isSignedIn() && currentRole() == 'SUPER_ADMIN';
     }
 
     function isAdmin() {
-      return isSignedIn() &&
-        roleOf(request.auth.uid) in ['ADMIN', 'SUPER_ADMIN'];
+      return isSignedIn() && currentRole() in ['ADMIN', 'SUPER_ADMIN'];
     }
 
     function isSelf(uid) {

@@ -129,15 +129,16 @@
   * {
     @apply border-border outline-ring/50;
   }
+  /* The font CSS variables are injected by next/font onto <body> (that's where
+     the font className lives), so the font-family must be declared here — not on
+     <html>, where the variables are undefined. */
   body {
     @apply bg-background text-foreground;
-  }
-  html {
-    @apply font-sans;
+    font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
   }
   /* When the Sinhala locale is active (<html lang="si">), prefer the
      Sinhala-capable typeface for correct glyph shaping (SRS §2). */
   html[lang="si"] body {
-    font-family: var(--font-sinhala), var(--font-sans), sans-serif;
+    font-family: var(--font-sinhala), var(--font-sans), ui-sans-serif, sans-serif;
   }
 }

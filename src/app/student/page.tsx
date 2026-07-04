@@ -4,7 +4,7 @@ import Link from "next/link";
 import { ArrowRight, CheckCircle2, Clock } from "lucide-react";
 
 import { StatusBadge } from "@/components/status-badge";
-import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -15,6 +15,7 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { useAuth } from "@/features/auth/auth-provider";
 import { useTranslation } from "@/lib/i18n/provider";
+import { cn } from "@/lib/utils";
 
 function Field({ label, value }: { label: string; value?: string | null }) {
   return (
@@ -60,9 +61,12 @@ export default function StudentDashboard() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Button render={<Link href="/student/onboarding" />} className="gap-2">
+            <Link
+              href="/student/onboarding"
+              className={cn(buttonVariants(), "gap-2")}
+            >
               {t("btn.next")} <ArrowRight className="size-4" />
-            </Button>
+            </Link>
           </CardContent>
         </Card>
       ) : (

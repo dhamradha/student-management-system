@@ -18,6 +18,7 @@ import {
 
 import { admissionToEmail } from "@/lib/auth/admission";
 import { auth, db } from "@/lib/firebase/client";
+import { STUDENT_EMAIL_DOMAIN } from "@/lib/firebase/config";
 import { createStudentProfile } from "@/lib/services/users";
 import type { UserDoc } from "@/types";
 
@@ -57,11 +58,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (!user) return;
     setLoading(true);
+    let healed = false;
     const unsub = onSnapshot(
       doc(db, "users", user.uid),
       (snap) => {
-        setProfile(snap.exists() ? (snap.data() as UserDoc) : null);
-        setLoading(false);
+        if (snap.exists()) {
+          setProfile(snap.data() as UserDoc);
+          setLoading(false);
+          return;
+        }
+        // No profile document. Self-heal a student whose profile write failed
+        // during registration by deriving the admission number from the
+        // synthetic login email. Staff accounts are provisioned separately and
+        // are never healed here. onSnapshot re-fires once the doc is written.
+        const email = user.email ?? "";
+        const suffix = `@${STUDENT_EMAIL_DOMAIN}`;
+        if (!healed && email.endsWith(suffix)) {
+          healed = true;
+          createStudentProfile(user.uid, email.slice(0, -suffix.length)).catch(
+            () => setLoading(false),
+          );
+        } else {
+          setProfile(null);
+          setLoading(false);
+        }
       },
       () => setLoading(false),
     );

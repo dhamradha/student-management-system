@@ -25,6 +25,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/features/auth/auth-provider";
 import { useTranslation } from "@/lib/i18n/provider";
@@ -120,7 +121,7 @@ export default function LoginPage() {
                     <FormItem>
                       <FormLabel>{t("auth.password")}</FormLabel>
                       <FormControl>
-                        <Input type="password" {...field} />
+                        <PasswordInput {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -163,7 +164,7 @@ export default function LoginPage() {
                     <FormItem>
                       <FormLabel>{t("auth.password")}</FormLabel>
                       <FormControl>
-                        <Input type="password" {...field} />
+                        <PasswordInput {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>

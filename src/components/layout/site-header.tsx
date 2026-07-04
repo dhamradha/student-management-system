@@ -6,7 +6,7 @@ import { LogOut } from "lucide-react";
 
 import { Logo } from "@/components/brand/logo";
 import { LanguageSwitcher } from "@/components/language-switcher";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { useAuth } from "@/features/auth/auth-provider";
 import { ROLE_HOME } from "@/lib/constants/roles";
 import { useTranslation } from "@/lib/i18n/provider";
@@ -29,13 +29,12 @@ export function SiteHeader() {
           <LanguageSwitcher />
           {user && profile ? (
             <>
-              <Button
-                render={<Link href={ROLE_HOME[profile.role]} />}
-                variant="ghost"
-                size="sm"
+              <Link
+                href={ROLE_HOME[profile.role]}
+                className={buttonVariants({ variant: "ghost", size: "sm" })}
               >
                 {t("nav.dashboard")}
-              </Button>
+              </Link>
               <Button
                 variant="outline"
                 size="sm"
@@ -48,12 +47,15 @@ export function SiteHeader() {
             </>
           ) : (
             <>
-              <Button render={<Link href="/login" />} variant="ghost" size="sm">
+              <Link
+                href="/login"
+                className={buttonVariants({ variant: "ghost", size: "sm" })}
+              >
                 {t("btn.login")}
-              </Button>
-              <Button render={<Link href="/register" />} size="sm">
+              </Link>
+              <Link href="/register" className={buttonVariants({ size: "sm" })}>
                 {t("btn.register")}
-              </Button>
+              </Link>
             </>
           )}
         </nav>

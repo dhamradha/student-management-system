@@ -24,6 +24,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { useAuth } from "@/features/auth/auth-provider";
 import { useTranslation } from "@/lib/i18n/provider";
 import { registerSchema, type RegisterInput } from "@/lib/validations/student";
@@ -90,7 +91,7 @@ export default function RegisterPage() {
                 <FormItem>
                   <FormLabel>{t("auth.password")}</FormLabel>
                   <FormControl>
-                    <Input type="password" {...field} />
+                    <PasswordInput {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -103,7 +104,7 @@ export default function RegisterPage() {
                 <FormItem>
                   <FormLabel>{t("auth.confirmPassword")}</FormLabel>
                   <FormControl>
-                    <Input type="password" {...field} />
+                    <PasswordInput {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

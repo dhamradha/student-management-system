@@ -5,9 +5,10 @@ import Link from "next/link";
 import { ArrowRight, GraduationCap, ShieldCheck, Users } from "lucide-react";
 
 import { SiteHeader } from "@/components/layout/site-header";
-import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useTranslation } from "@/lib/i18n/provider";
+import { cn } from "@/lib/utils";
 
 export default function LandingPage() {
   const { t } = useTranslation();
@@ -37,20 +38,18 @@ export default function LandingPage() {
                 {t("app.tagline")}
               </p>
               <div className="flex flex-wrap gap-3">
-                <Button
-                  render={<Link href="/register" />}
-                  size="lg"
-                  className="gap-2"
+                <Link
+                  href="/register"
+                  className={cn(buttonVariants({ size: "lg" }), "gap-2")}
                 >
                   {t("btn.register")} <ArrowRight className="size-4" />
-                </Button>
-                <Button
-                  render={<Link href="/login" />}
-                  size="lg"
-                  variant="outline"
+                </Link>
+                <Link
+                  href="/login"
+                  className={buttonVariants({ size: "lg", variant: "outline" })}
                 >
                   {t("btn.login")}
-                </Button>
+                </Link>
               </div>
             </div>
 
