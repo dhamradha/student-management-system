@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 
+import { useConfirm } from "@/components/confirm-dialog";
 import { PaginationControls } from "@/components/pagination-controls";
 import { Button } from "@/components/ui/button";
 import {
@@ -39,6 +40,7 @@ import type { FormDoc, FormSubmission } from "@/types/forms";
 export function SubmissionsReview({ formId }: { formId: string }) {
   const { t } = useTranslation();
   const { user, profile } = useAuth();
+  const confirm = useConfirm();
 
   const [form, setForm] = useState<FormDoc | null>(null);
   const [active, setActive] = useState<FormSubmission | null>(null);
@@ -56,7 +58,14 @@ export function SubmissionsReview({ formId }: { formId: string }) {
     usePaged<FormSubmission>(fetchPage, `submissions:${formId}`);
 
   async function reject(sub: FormSubmission) {
-    if (!window.confirm(t("common.confirmDelete"))) return;
+    const ok = await confirm({
+      title: "Reject this submission?",
+      description:
+        "The submission will be marked rejected and removed from the pending list.",
+      confirmLabel: t("btn.reject"),
+      destructive: true,
+    });
+    if (!ok) return;
     try {
       await setSubmissionStatus(sub.id, "rejected");
       toast.success("Submission rejected.");

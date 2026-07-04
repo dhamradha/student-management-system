@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
-import { Eye, Plus } from "lucide-react";
+import { AlertTriangle, Eye, Plus } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -183,6 +183,16 @@ export function FormBuilder({
 
   return (
     <div className="space-y-6">
+      {initial?.status === "published" && (
+        <div className="border-gold/40 bg-gold/10 text-gold-foreground flex items-start gap-2 rounded-lg border p-3 text-sm">
+          <AlertTriangle className="mt-0.5 size-4 shrink-0" />
+          <span>
+            This form is <strong>published</strong> and may already have student
+            responses. Changing or removing fields can affect existing
+            submissions.
+          </span>
+        </div>
+      )}
       <Card>
         <CardHeader>
           <CardTitle className="text-primary">Form details</CardTitle>

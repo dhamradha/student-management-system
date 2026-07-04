@@ -2,6 +2,7 @@
 
 import { ThemeProvider } from "next-themes";
 
+import { ConfirmProvider } from "@/components/confirm-dialog";
 import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider } from "@/features/auth/auth-provider";
 import { I18nProvider } from "@/lib/i18n/provider";
@@ -17,8 +18,10 @@ export function Providers({ children }: { children: React.ReactNode }) {
     >
       <I18nProvider>
         <AuthProvider>
-          {children}
-          <Toaster richColors position="top-center" />
+          <ConfirmProvider>
+            {children}
+            <Toaster richColors position="top-center" />
+          </ConfirmProvider>
         </AuthProvider>
       </I18nProvider>
     </ThemeProvider>

@@ -1,10 +1,12 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useCallback, useState } from "react";
 import { Copy, Inbox, Pencil, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
+import { useConfirm } from "@/components/confirm-dialog";
 import { PaginationControls } from "@/components/pagination-controls";
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -16,6 +18,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Tooltip } from "@/components/ui/tooltip";
 import { usePaged } from "@/hooks/use-paged";
 import { PAGE_SIZE, type Cursor } from "@/lib/pagination";
 import { deleteForm, pageForms } from "@/lib/services/forms";
@@ -25,6 +28,8 @@ import type { FormDoc } from "@/types/forms";
 
 export function FormsList() {
   const { t } = useTranslation();
+  const router = useRouter();
+  const confirm = useConfirm();
   const [busyId, setBusyId] = useState<string | null>(null);
 
   const fetchPage = useCallback(
@@ -44,8 +49,32 @@ export function FormsList() {
     }
   }
 
+  async function handleEdit(form: FormDoc) {
+    if (form.status === "published") {
+      const ok = await confirm({
+        title: "Edit a published form?",
+        description:
+          "This form is live and may already have student responses. Editing " +
+          "its fields can change or misalign those submissions.",
+        confirmLabel: "Continue editing",
+      });
+      if (!ok) return;
+    }
+    router.push(`/forms/${form.id}/edit`);
+  }
+
   async function handleDelete(form: FormDoc) {
-    if (!window.confirm(t("common.confirmDelete"))) return;
+    const ok = await confirm({
+      title: "Delete this form?",
+      description:
+        form.status === "published"
+          ? "This published form may already have student responses. Deleting it " +
+            "removes the form and unlinks its submissions. This cannot be undone."
+          : "This form will be permanently removed. This cannot be undone.",
+      confirmLabel: t("btn.delete"),
+      destructive: true,
+    });
+    if (!ok) return;
     setBusyId(form.id);
     try {
       await deleteForm(form.id);
@@ -79,7 +108,7 @@ export function FormsList() {
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {forms.map((form) => (
-            <Card key={form.id} className="flex flex-col">
+            <Card key={form.id} className="flex flex-col overflow-visible">
               <CardHeader className="gap-2">
                 <div className="flex items-start justify-between gap-2">
                   <CardTitle className="text-base leading-snug">
@@ -123,39 +152,48 @@ export function FormsList() {
 
               <CardFooter className="gap-1.5">
                 {form.status === "published" && (
+                  <Tooltip label="Copy share link">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => copyLink(form.id)}
+                      aria-label="Copy share link"
+                    >
+                      <Copy className="size-4" />
+                    </Button>
+                  </Tooltip>
+                )}
+                <Tooltip label="Submissions">
+                  <Link
+                    href={`/forms/${form.id}/submissions`}
+                    className={buttonVariants({ variant: "ghost", size: "sm" })}
+                    aria-label="Submissions"
+                  >
+                    <Inbox className="size-4" />
+                  </Link>
+                </Tooltip>
+                <Tooltip label={t("btn.edit")}>
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => copyLink(form.id)}
-                    aria-label="Copy share link"
+                    onClick={() => handleEdit(form)}
+                    aria-label={t("btn.edit")}
                   >
-                    <Copy className="size-4" />
+                    <Pencil className="size-4" />
                   </Button>
-                )}
-                <Link
-                  href={`/forms/${form.id}/submissions`}
-                  className={buttonVariants({ variant: "ghost", size: "sm" })}
-                  aria-label="Submissions"
-                >
-                  <Inbox className="size-4" />
-                </Link>
-                <Link
-                  href={`/forms/${form.id}/edit`}
-                  className={buttonVariants({ variant: "ghost", size: "sm" })}
-                  aria-label={t("btn.edit")}
-                >
-                  <Pencil className="size-4" />
-                </Link>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  disabled={busyId === form.id}
-                  onClick={() => handleDelete(form)}
-                  aria-label={t("btn.delete")}
-                  className="text-destructive hover:text-destructive ml-auto"
-                >
-                  <Trash2 className="size-4" />
-                </Button>
+                </Tooltip>
+                <Tooltip label={t("btn.delete")} className="ml-auto">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    disabled={busyId === form.id}
+                    onClick={() => handleDelete(form)}
+                    aria-label={t("btn.delete")}
+                    className="text-destructive hover:text-destructive"
+                  >
+                    <Trash2 className="size-4" />
+                  </Button>
+                </Tooltip>
               </CardFooter>
             </Card>
           ))}

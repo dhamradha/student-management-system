@@ -6,6 +6,7 @@ import { Trash2, UserPlus } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
+import { useConfirm } from "@/components/confirm-dialog";
 import { PaginationControls } from "@/components/pagination-controls";
 import { Button } from "@/components/ui/button";
 import {
@@ -33,6 +34,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Tooltip } from "@/components/ui/tooltip";
 import { usePaged } from "@/hooks/use-paged";
 import { PAGE_SIZE, type Cursor } from "@/lib/pagination";
 import {
@@ -46,6 +48,7 @@ import type { UserDoc } from "@/types";
 
 export function TeachersManager() {
   const { t } = useTranslation();
+  const confirm = useConfirm();
   const [busyUid, setBusyUid] = useState<string | null>(null);
 
   const form = useForm<NewTeacherInput>({
@@ -81,7 +84,13 @@ export function TeachersManager() {
   }
 
   async function onDelete(teacher: UserDoc) {
-    if (!window.confirm(t("common.confirmDelete"))) return;
+    const ok = await confirm({
+      title: "Revoke access?",
+      description: `${teacher.displayName} will lose access and their account will be removed. This cannot be undone.`,
+      confirmLabel: t("btn.delete"),
+      destructive: true,
+    });
+    if (!ok) return;
     setBusyUid(teacher.uid);
     try {
       await deleteTeacher(teacher.uid);
@@ -193,16 +202,18 @@ export function TeachersManager() {
                   </TableCell>
                   <TableCell>{teacher.email}</TableCell>
                   <TableCell className="text-right">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      disabled={busyUid === teacher.uid}
-                      onClick={() => onDelete(teacher)}
-                      aria-label={t("btn.delete")}
-                      className="text-destructive hover:text-destructive"
-                    >
-                      <Trash2 className="size-4" />
-                    </Button>
+                    <Tooltip label="Remove teacher" className="ml-auto">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        disabled={busyUid === teacher.uid}
+                        onClick={() => onDelete(teacher)}
+                        aria-label={t("btn.delete")}
+                        className="text-destructive hover:text-destructive"
+                      >
+                        <Trash2 className="size-4" />
+                      </Button>
+                    </Tooltip>
                   </TableCell>
                 </TableRow>
               ))

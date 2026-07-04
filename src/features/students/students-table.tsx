@@ -5,6 +5,7 @@ import { useCallback, useState } from "react";
 import { Pencil, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
+import { useConfirm } from "@/components/confirm-dialog";
 import { PaginationControls } from "@/components/pagination-controls";
 import { Button, buttonVariants } from "@/components/ui/button";
 import {
@@ -23,6 +24,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Tooltip } from "@/components/ui/tooltip";
 import { usePaged } from "@/hooks/use-paged";
 import { AL_STREAMS, GRADES, OL_CLASSES } from "@/lib/constants/academic";
 import { PAGE_SIZE, type Cursor } from "@/lib/pagination";
@@ -36,6 +38,7 @@ const SUB_DIVISIONS = [...OL_CLASSES, ...AL_STREAMS];
 
 export function StudentsTable() {
   const { t } = useTranslation();
+  const confirm = useConfirm();
   const [busyId, setBusyId] = useState<string | null>(null);
   const [grade, setGrade] = useState(ALL);
   const [classStream, setClassStream] = useState(ALL);
@@ -57,7 +60,13 @@ export function StudentsTable() {
     usePaged<StudentRecord>(fetchPage, `${grade}|${classStream}`);
 
   async function handleDelete(record: StudentRecord) {
-    if (!window.confirm(t("common.confirmDelete"))) return;
+    const ok = await confirm({
+      title: "Delete this student?",
+      description: `${record.academicData.fullName}'s record will be permanently removed. This cannot be undone.`,
+      confirmLabel: t("btn.delete"),
+      destructive: true,
+    });
+    if (!ok) return;
     setBusyId(record.id);
     try {
       await deleteStudent(record.id);
@@ -133,26 +142,30 @@ export function StudentsTable() {
                   <TableCell>{s.academicData.classStream}</TableCell>
                   <TableCell>
                     <div className="flex justify-end gap-2">
-                      <Link
-                        href={`/students/${s.id}`}
-                        className={buttonVariants({
-                          variant: "outline",
-                          size: "sm",
-                        })}
-                        aria-label={t("btn.edit")}
-                      >
-                        <Pencil className="size-4" />
-                      </Link>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        disabled={busyId === s.id}
-                        onClick={() => handleDelete(s)}
-                        aria-label={t("btn.delete")}
-                        className="text-destructive hover:text-destructive"
-                      >
-                        <Trash2 className="size-4" />
-                      </Button>
+                      <Tooltip label={t("btn.edit")}>
+                        <Link
+                          href={`/students/${s.id}`}
+                          className={buttonVariants({
+                            variant: "outline",
+                            size: "sm",
+                          })}
+                          aria-label={t("btn.edit")}
+                        >
+                          <Pencil className="size-4" />
+                        </Link>
+                      </Tooltip>
+                      <Tooltip label={t("btn.delete")}>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          disabled={busyId === s.id}
+                          onClick={() => handleDelete(s)}
+                          aria-label={t("btn.delete")}
+                          className="text-destructive hover:text-destructive"
+                        >
+                          <Trash2 className="size-4" />
+                        </Button>
+                      </Tooltip>
                     </div>
                   </TableCell>
                 </TableRow>
