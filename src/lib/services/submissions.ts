@@ -46,20 +46,30 @@ export async function createSubmission(
   grade: string,
   classStream: string | null,
 ): Promise<void> {
-  const ref = doc(submissionsCol);
+  const mapped = buildMapped(form.fields, answers);
+
+  // Deterministic id keyed on the natural identity (admission no / NIC) so a
+  // repeat submission for the same person becomes an update — which the public
+  // is not allowed to do, blocking duplicates. Falls back to a random id when
+  // the form has no identity field.
+  const identity = form.target === "teacher" ? mapped.nic : mapped.admissionNo;
+  const id = identity
+    ? `${form.id}__${identity.replace(/[^a-zA-Z0-9]/g, "_").toLowerCase()}`
+    : doc(submissionsCol).id;
+
   const record: FormSubmission = {
-    id: ref.id,
+    id,
     formId: form.id,
     formTitle: form.title,
     target: form.target,
     grade,
     classStream,
     answers,
-    mapped: buildMapped(form.fields, answers),
+    mapped,
     status: "pending",
     submittedAt: new Date().toISOString(),
   };
-  await setDoc(ref, record);
+  await setDoc(doc(submissionsCol, id), record);
 }
 
 /** One page of submissions for a form, newest first, filtered by status. */

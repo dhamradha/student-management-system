@@ -100,8 +100,15 @@ export function PublicForm({
           : null,
       );
       setDone(true);
-    } catch {
-      toast.error("Could not submit. Please try again.");
+    } catch (err) {
+      const code = (err as { code?: string })?.code ?? "";
+      if (code.includes("permission-denied")) {
+        toast.error(
+          "A response has already been submitted for these details.",
+        );
+      } else {
+        toast.error("Could not submit. Please try again.");
+      }
     }
   }
 

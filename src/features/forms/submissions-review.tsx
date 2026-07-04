@@ -63,13 +63,16 @@ export function SubmissionsReview({ formId }: { formId: string }) {
     const ok = await confirm({
       title: "Reject this submission?",
       description:
-        "The submission will be marked rejected and removed from the pending list.",
+        "The submission will be removed. The person can then submit the form " +
+        "again with corrected details.",
       confirmLabel: t("btn.reject"),
       destructive: true,
     });
     if (!ok) return;
     try {
-      await setSubmissionStatus(sub.id, "rejected");
+      // Delete so the identity slot frees up and a corrected resubmission is
+      // possible.
+      await deleteSubmission(sub.id);
       toast.success("Submission rejected.");
       reload();
     } catch {
@@ -78,8 +81,9 @@ export function SubmissionsReview({ formId }: { formId: string }) {
   }
 
   async function finalizeApproval(id: string) {
+    // Keep the (now approved) submission so its identity-keyed id stays
+    // reserved — this blocks the same person from submitting the form again.
     await setSubmissionStatus(id, "approved");
-    await deleteSubmission(id).catch(() => {});
     toast.success("Record added from submission.");
     setActive(null);
     reload();
